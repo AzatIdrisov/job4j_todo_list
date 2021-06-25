@@ -2,6 +2,7 @@ package ru.job4j.todolist.store;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
@@ -9,6 +10,7 @@ import org.hibernate.query.Query;
 import ru.job4j.todolist.model.Task;
 
 import java.util.List;
+import java.util.function.Function;
 
 public class HibStore {
     private final StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
@@ -24,59 +26,52 @@ public class HibStore {
         return Holder.INSTANCE;
     }
 
-    public Task add(Task task) {
-        try (Session session = sf.openSession()) {
-            session.beginTransaction();
-            session.save(task);
-            session.getTransaction().commit();
+    private <T> T tx(final Function<Session, T> command) {
+        final Session session = sf.openSession();
+        final Transaction tx = session.beginTransaction();
+        try {
+            T rsl = command.apply(session);
+            tx.commit();
+            return rsl;
+        } catch (final Exception e) {
+            session.getTransaction().rollback();
+            throw e;
+        } finally {
+            session.close();
         }
-        return task;
+    }
+
+    public Task add(Task task) {
+        return (Task) this.tx(
+                session -> session.save(task)
+        );
     }
 
     public List<Task> findAll() {
-        List<Task> result;
-        try (Session session = sf.openSession()) {
-            session.beginTransaction();
-            result = session.createQuery("from Task").list();
-            session.getTransaction().commit();
-        }
-        return result;
+        return this.tx(
+                session -> session.createQuery("from Task").list()
+        );
     }
 
     public List<Task> findNotDone() {
-        List<Task> result;
-        try (Session session = sf.openSession()) {
-            session.beginTransaction();
-            Query query = session.createQuery(
-                    "from Task where isDone = :paramDone");
-            query.setParameter("paramDone", false);
-            result = query.list();
-            session.getTransaction().commit();
-        }
-        return result;
+        return this.tx(session -> session.createQuery(
+                "from Task where isDone = false ").list()
+        );
     }
 
     public Task findById(int id) {
-        Task result;
-        try (Session session = sf.openSession()) {
-            session.beginTransaction();
-            result = session.get(Task.class, id);
-            session.getTransaction().commit();
-        }
-        return result;
+        return this.tx(
+                session -> session.get(Task.class, id)
+        );
     }
 
     public void changeStatusToDone(int id) {
-        try (Session session = sf.openSession()) {
-            session.beginTransaction();
-            String hql = "update Task "
-                    + "SET isDone = true "
-                    +  " where id = :paramId";
-            Query query = session.createQuery(hql);
-            query.setParameter("paramId", id);
-            query.executeUpdate();
-            session.getTransaction().commit();
-        }
+        this.tx(
+                session -> session.createQuery("update Task "
+                        + "SET isDone = true "
+                        + " where id = " + id)
+                        .executeUpdate()
+        );
     }
 
     public static void main(String[] args) {
