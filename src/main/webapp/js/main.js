@@ -39,7 +39,8 @@ function loadTasks() {
             let content = "";
             for (let i = 0; i < tasks.length; i++) {
                 content += '<tr><td>' + tasks[i].head + '</td>';
-                content += '<td>' + tasks[i].desc + '</td><td>';
+                content += '<td>' + tasks[i].desc + '</td>';
+                content += '<td>' + tasks[i].author + '</td><td>';
                 if (tasks[i].done === true) {
                     content += "<label><input type=\"checkbox\" checked=\"checked\" disabled></label>"
                 } else {

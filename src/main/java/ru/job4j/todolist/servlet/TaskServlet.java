@@ -3,7 +3,9 @@ package ru.job4j.todolist.servlet;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import ru.job4j.todolist.model.Task;
+import ru.job4j.todolist.model.User;
 import ru.job4j.todolist.store.HibStore;
+import ru.job4j.todolist.store.HibUserStore;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -34,6 +36,7 @@ public class TaskServlet extends HttpServlet {
             taskObj.put("head", task.getHead());
             taskObj.put("desc", task.getDescription());
             taskObj.put("done", task.isDone());
+            taskObj.put("author", task.getUser().getName());
             tasks.add(taskObj);
         }
         obj.put("tasks", tasks);
@@ -49,12 +52,15 @@ public class TaskServlet extends HttpServlet {
             throws ServletException, IOException {
         req.setCharacterEncoding("utf-8");
         String taskIdStr = req.getParameter("task_id");
+        List<User> usersList = (List<User>) req.getSession().getAttribute("user");
+        User user = usersList.get(0);
         if (taskIdStr != null) {
             HibStore.instOf().changeStatusToDone(Integer.parseInt(taskIdStr));
         } else {
             HibStore.instOf().add(
                     new Task(req.getParameter("head"),
-                            req.getParameter("desc"))
+                            req.getParameter("desc"),
+                            user)
             );
             resp.sendRedirect("index.jsp");
         }

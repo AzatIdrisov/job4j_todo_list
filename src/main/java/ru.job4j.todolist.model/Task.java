@@ -15,11 +15,16 @@ public class Task {
     private Timestamp created;
     private boolean isDone;
 
-    public Task(String head, String description) {
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    public Task(String head, String description, User user) {
         this.head = head;
         this.description = description;
         this.isDone = false;
         this.created = new Timestamp(System.currentTimeMillis());
+        this.user = user;
     }
 
     public Task() {
@@ -65,6 +70,14 @@ public class Task {
         this.created = created;
     }
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -74,10 +87,7 @@ public class Task {
             return false;
         }
         Task task = (Task) o;
-        return isDone == task.isDone
-                && Objects.equals(id, task.id)
-                && Objects.equals(head, task.head)
-                && Objects.equals(description, task.description);
+        return id == task.id;
     }
 
     @Override

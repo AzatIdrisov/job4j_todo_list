@@ -6,24 +6,24 @@ import org.hibernate.Transaction;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.query.Query;
-import ru.job4j.todolist.model.Task;
+import ru.job4j.todolist.model.User;
 
+import javax.persistence.Query;
 import java.util.List;
 import java.util.function.Function;
 
-public class HibStore {
+public class HibUserStore {
     private final StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
             .configure().build();
     private final SessionFactory sf = new MetadataSources(registry)
             .buildMetadata().buildSessionFactory();
 
     private static final class Holder {
-        private static final HibStore INSTANCE = new HibStore();
+        private static final HibUserStore INSTANCE = new HibUserStore();
     }
 
-    public static HibStore instOf() {
-        return Holder.INSTANCE;
+    public static HibUserStore instOf() {
+        return HibUserStore.Holder.INSTANCE;
     }
 
     private <T> T tx(final Function<Session, T> command) {
@@ -41,41 +41,23 @@ public class HibStore {
         }
     }
 
-    public void add(Task task) {
+    public void addUser(User user) {
         this.tx(
-                session -> session.save(task)
+                session -> session.save(user)
         );
     }
 
-    public List<Task> findAll() {
+    public User findUserById(int id) {
         return this.tx(
-                session -> session.createQuery("from Task").list()
+                session -> session.get(User.class, id)
         );
     }
 
-    public List<Task> findNotDone() {
-        return this.tx(session -> session.createQuery(
-                "from Task where isDone = false ").list()
-        );
-    }
-
-    public Task findById(int id) {
-        return this.tx(
-                session -> session.get(Task.class, id)
-        );
-    }
-
-    public void changeStatusToDone(int id) {
-        this.tx(
-                session -> session.createQuery("update Task "
-                        + "SET isDone = true "
-                        + " where id = " + id)
-                        .executeUpdate()
-        );
-    }
-
-    public static void main(String[] args) {
-        List<Task> tasks = HibStore.instOf().findAll();
-        tasks.forEach(System.out::println);
+    public List<User> findUserByEmail(String email) {
+        return this.tx(session -> {
+            final Query query = session.createQuery("from User where email=:email");
+            query.setParameter("email", email);
+            return query.getResultList();
+        });
     }
 }
