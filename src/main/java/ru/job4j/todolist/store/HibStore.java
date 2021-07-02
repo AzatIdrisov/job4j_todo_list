@@ -7,6 +7,7 @@ import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.query.Query;
+import ru.job4j.todolist.model.Category;
 import ru.job4j.todolist.model.Task;
 
 import java.util.List;
@@ -41,21 +42,29 @@ public class HibStore {
         }
     }
 
-    public void add(Task task) {
+    public void add(Task task, String[] ids) {
         this.tx(
-                session -> session.save(task)
+                session -> {
+                    for (String id : ids) {
+                        Category category = session.find(Category.class, Integer.parseInt(id));
+                        task.addCategory(category);
+                    }
+                    return session.save(task);
+                }
         );
     }
 
     public List<Task> findAll() {
         return this.tx(
-                session -> session.createQuery("from Task").list()
+                session -> session.createQuery(
+                        "select distinct t from Task t join fetch t.categories")
+                        .list()
         );
     }
 
     public List<Task> findNotDone() {
         return this.tx(session -> session.createQuery(
-                "from Task where isDone = false ").list()
+                "select distinct t from Task t join fetch t.categories where t.isDone = false ").list()
         );
     }
 
@@ -72,6 +81,11 @@ public class HibStore {
                         + " where id = " + id)
                         .executeUpdate()
         );
+    }
+
+    public List<Category> getAllCategories() {
+        return tx(session ->
+                session.createQuery("from ru.job4j.todolist.model.Category").list());
     }
 
     public static void main(String[] args) {

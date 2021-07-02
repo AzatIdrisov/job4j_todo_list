@@ -1,4 +1,7 @@
+<%@ page import="ru.job4j.todolist.store.HibStore" %>
+<%@ page import="ru.job4j.todolist.model.Category" %>
 <%@ page contentType="text/html; charset=UTF-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jstl/core" %>
 <!doctype html>
 <html lang="en">
 
@@ -41,6 +44,15 @@
             <label style="vertical-align: top" for="desc">Описание</label>
             <textarea id="desc" name="desc" rows="4" cols="50"></textarea>
         </div>
+        <div class="form-group">
+            <label class="col-form-label col-sm-3" for="cIds" >
+                Категории
+            </label>
+            <div class="col-sm-5">
+                <select class="form-control" name="cIds" id="cIds" multiple>
+                </select>
+            </div>
+        </div>
         <button type="submit" onclick="return validate()" class="btn btn-primary">Добавить</button>
     </form>
     <H1>Список задач</H1>
@@ -56,6 +68,7 @@
             <tr>
                 <th>Заголовок</th>
                 <th>Описание</th>
+                <th>Категория</th>
                 <th>Создал</th>
                 <th>Статус</th>
             </tr>

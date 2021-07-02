@@ -9,7 +9,11 @@ function validate() {
         fields.push('Описание');
         result = false
     }
-    if (fields.length > 1) {
+    if ($('#cIds').val() == '') {
+        fields.push('Категории');
+        result = false
+    }
+    if (fields.length >0 ) {
         let msg = fields[0];
         for (let i = 1; i < fields.length; ++i) {
             msg += ', ' + fields[i];
@@ -23,12 +27,12 @@ function validate() {
 
 $(document).ready(
     function () {
-        loadTasks();
+        loadTasksAndCategories();
     }
 )
 
 
-function loadTasks() {
+function loadTasksAndCategories() {
     $.ajax({
         type: 'GET',
         url: 'http://localhost:8080/todo/task.do?show_all=' + $('#show_all').is(":checked"),
@@ -39,7 +43,14 @@ function loadTasks() {
             let content = "";
             for (let i = 0; i < tasks.length; i++) {
                 content += '<tr><td>' + tasks[i].head + '</td>';
-                content += '<td>' + tasks[i].desc + '</td>';
+                content += '<td>' + tasks[i].desc + '</td><td>';
+                let categoryContent = '<ul>';
+                let categories = tasks[i].categories;
+                for (let j = 0; j < categories.length; j++){
+                    categoryContent += '<li>' + categories[j].name + '</li>';
+                }
+                categoryContent += '</ul>';
+                content += categoryContent + '</td>';
                 content += '<td>' + tasks[i].author + '</td><td>';
                 if (tasks[i].done === true) {
                     content += "<label><input type=\"checkbox\" checked=\"checked\" disabled></label>"
@@ -50,6 +61,7 @@ function loadTasks() {
                 content += "</td></tr>";
             }
             $('#table_body').html(content);
+            loadCategories(data);
         }
     })
 }
@@ -68,4 +80,12 @@ function closeTask(id) {
     return result;
 }
 
-
+function loadCategories(data) {
+            let categories = data.allCategories;
+            let content = "";
+            for (let i = 0; i < categories.length; i++) {
+                content += ' <option value=\'' + categories[i].id + '\'>';
+                content += categories[i].name + '</option>';
+            }
+            $('#cIds').html(content);
+}
