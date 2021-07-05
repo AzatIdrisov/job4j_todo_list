@@ -3,6 +3,7 @@ package ru.job4j.todolist.model;
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -14,8 +15,10 @@ public class Task {
     private int id;
     private String head;
     private String description;
-    private Timestamp created;
     private boolean isDone;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date created;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -28,7 +31,7 @@ public class Task {
         this.head = head;
         this.description = description;
         this.isDone = false;
-        this.created = new Timestamp(System.currentTimeMillis());
+        this.created = new Date(System.currentTimeMillis());
         this.user = user;
     }
 
@@ -67,11 +70,11 @@ public class Task {
         isDone = done;
     }
 
-    public Timestamp getCreated() {
+    public Date getCreated() {
         return created;
     }
 
-    public void setCreated(Timestamp created) {
+    public void setCreated(Date created) {
         this.created = created;
     }
 

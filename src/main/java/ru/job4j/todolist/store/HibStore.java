@@ -64,7 +64,8 @@ public class HibStore {
 
     public List<Task> findNotDone() {
         return this.tx(session -> session.createQuery(
-                "select distinct t from Task t join fetch t.categories where t.isDone = false ").list()
+                "select distinct t from Task t join fetch t.categories where t.isDone = false ")
+                .list()
         );
     }
 
