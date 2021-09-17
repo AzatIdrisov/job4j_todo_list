@@ -59,7 +59,7 @@
     <div class="form-check">
         <label class="form-check-label">
             <input class="form-check-input" type="checkbox" value="all" id="show_all" name="show_all" checked="checked"
-                   onclick='loadTasks()'>Показать всё
+                   onclick='loadTasksAndCategories()'>Показать всё
         </label>
     </div>
     <div class="container">
